@@ -11,6 +11,9 @@ Stack: static frontend (`public/`) + Vercel serverless API (`api/`) + Neon Postg
 
 The amount is always recalculated on the server from the stored charge, and each entry keeps a snapshot of supplier, brand, service and charge, so later changes to the lists never alter past records.
 
+- **Admin** (password protected): pick a month, then a brand (same picker as New Entry) to see that brand's entries and **edit** date / service / quantity, **save**, or **delete** (two-step confirm). The password is checked on the server for every edit and delete, and the tab locks again whenever you leave it. Default password is `8888`; set the `ADMIN_PASSWORD` env var in Vercel to change it without editing code.
+  - Editing keeps an entry's original charge unless you change its service type, in which case the current charge for the new service is used.
+
 ## Deploy (about 10 minutes)
 
 ### 1. Neon (database)
@@ -31,6 +34,7 @@ git push -u origin main
 1. vercel.com → **Add New → Project** → import the GitHub repo (no framework, no build command; leave defaults).
 2. **Environment Variables**:
    - `DATABASE_URL` = your Neon connection string
+   - `ADMIN_PASSWORD` = optional, to replace the default `8888`
    - `ACCESS_CODE` = optional shared code (e.g. `7799`). If set, the app asks for it. **Recommended**, because otherwise anyone with the URL can read and add entries.
 3. Deploy. Later pushes to `main` redeploy automatically. (Changing an env var requires a redeploy.)
 

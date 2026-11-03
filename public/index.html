@@ -35,6 +35,7 @@
       <a href="#/" data-route="dashboard"><svg><use href="#i-home"/></svg><span>Dashboard</span></a>
       <a href="#/entries" data-route="entries"><svg><use href="#i-list"/></svg><span>Submitted Entries</span></a>
       <a href="#/summary" data-route="summary"><svg><use href="#i-chart"/></svg><span>Monthly Summary</span></a>
+      <a href="#/admin" data-route="admin"><svg><use href="#i-lock"/></svg><span>Admin</span></a>
     </nav>
     <div class="side-foot">Servay Evergreen Benoni<br>Outlet SEGSHBN</div>
   </aside>
@@ -162,6 +163,59 @@
         </article>
       </div>
     </section>
+    <!-- ADMIN (edit / delete, password protected) -->
+    <section id="view-admin" hidden>
+      <header class="page-head">
+        <div>
+          <p class="eyebrow">Restricted</p>
+          <h1>Admin</h1>
+        </div>
+      </header>
+
+      <section class="card gate" id="adminGate">
+        <form id="adminForm">
+          <h2>Admin access</h2>
+          <p class="hint">Enter the admin password to edit or delete entries.</p>
+          <input type="password" id="aPass" placeholder="Admin password" autocomplete="off" required>
+          <p class="err" id="aErr" hidden>Incorrect admin password.</p>
+          <button class="btn primary" type="submit">Unlock</button>
+        </form>
+      </section>
+
+      <div id="adminBody" hidden>
+        <section class="card">
+          <div class="filters">
+            <label class="f"><span>1. Month</span><input type="month" id="aMonth"></label>
+            <div class="f grow">
+              <label for="aBrand">2. Supplier / Brand</label>
+              <div class="combo">
+                <svg class="combo-ico"><use href="#i-search"/></svg>
+                <input id="aBrand" type="text" placeholder="Type a brand or supplier" role="combobox" aria-expanded="false"
+                       aria-controls="aBrandList" aria-autocomplete="list" autocapitalize="characters" spellcheck="false" autocomplete="off">
+                <button type="button" class="clear" id="aBrandClear" aria-label="Clear supplier" hidden>&times;</button>
+                <ul id="aBrandList" class="opts" role="listbox" hidden></ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" id="aResults" hidden style="margin-top:20px">
+          <div class="card-head">
+            <h2 id="aHead"></h2>
+            <span class="hint" id="aSub"></span>
+          </div>
+          <div class="table-wrap">
+            <table class="tbl adm">
+              <thead><tr>
+                <th>Date</th><th>Service type</th><th class="num">Qty</th><th class="num">Charge (RM)</th><th class="num">Amount (RM)</th><th></th>
+              </tr></thead>
+              <tbody id="aBody"></tbody>
+              <tfoot><tr><td colspan="4" id="aCount"></td><td class="num" id="aTotal"></td><td></td></tr></tfoot>
+            </table>
+          </div>
+        </section>
+      </div>
+    </section>
   </main>
 </div>
 
@@ -172,6 +226,7 @@
   <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
   <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></symbol>
   <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>
 </svg>
 <script src="/app.js"></script>

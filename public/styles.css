@@ -272,3 +272,26 @@ mark { background: transparent; color: var(--accent); font-weight: 800; text-dec
 @media (max-width: 760px) {
   .paper { margin: 0; }
 }
+
+/* ---------- Admin ---------- */
+.gate { max-width: 420px; }
+.gate form { display: flex; flex-direction: column; gap: 12px; }
+.gate p { margin: 0; }
+.btn.sm { min-height: 38px; padding: 6px 14px; font-size: 14px; }
+.btn.danger { color: var(--danger); border-color: var(--danger); background: transparent; }
+.btn.danger:hover { background: color-mix(in srgb, var(--danger) 10%, transparent); }
+.btn.danger.armed { background: var(--danger); color: #fff; }
+.tbl.adm td { vertical-align: middle; }
+.tbl.adm input, .tbl.adm select {
+  min-height: 38px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); width: 100%; max-width: 280px;
+}
+.tbl.adm input[type=date] { width: 150px; }
+.tbl.adm input[type=number] { width: 84px; text-align: right; }
+.tbl.adm td.act { white-space: nowrap; display: table-cell; }
+.tbl.adm td.act .btn + .btn { margin-left: 6px; }
+.tbl.adm tr.dirty { background: var(--accent-soft); }
+@media (max-width: 760px) {
+  .tbl.adm td.act { display: flex; justify-content: flex-end; gap: 8px; padding-top: 8px; }
+  .tbl.adm td.act::before { content: none; }
+  .tbl.adm input[type=date], .tbl.adm select { width: 62%; max-width: none; }
+}

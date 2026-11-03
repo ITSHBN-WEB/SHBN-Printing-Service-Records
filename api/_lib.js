@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'node:crypto';
 import { neon } from '@neondatabase/serverless';
 
 let client;
@@ -18,8 +19,21 @@ export function authorized(req) {
   return req.headers['x-access-code'] === code;
 }
 
+function same(a, b) {
+  const x = Buffer.from(String(a ?? ''));
+  const y = Buffer.from(String(b ?? ''));
+  return x.length === y.length && timingSafeEqual(x, y);
+}
+
+// Admin password for edit / delete. Set ADMIN_PASSWORD in Vercel to change it
+// without touching code; falls back to 8888.
+export function adminOk(req) {
+  return same(req.headers['x-admin-password'], process.env.ADMIN_PASSWORD || '8888');
+}
+
 // Wraps a handler with method check, auth check and error handling.
-export function route(methods, fn) {
+// { admin: true } additionally requires the admin password.
+export function route(methods, fn, { admin = false } = {}) {
   return async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
     if (!methods.includes(req.method)) {
@@ -27,6 +41,11 @@ export function route(methods, fn) {
       return res.status(405).json({ error: 'Method not allowed' });
     }
     if (!authorized(req)) return res.status(401).json({ error: 'Access code required' });
+    if (admin && !adminOk(req)) {
+      // small delay slows down password guessing
+      await new Promise((r) => setTimeout(r, 700));
+      return res.status(401).json({ error: 'Incorrect admin password', admin: true });
+    }
     try {
       await fn(req, res);
     } catch (err) {
