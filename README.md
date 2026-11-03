@@ -7,10 +7,7 @@ Stack: static frontend (`public/`) + Vercel serverless API (`api/`) + Neon Postg
 - **Dashboard**: greeting, today / this-month totals, **New Entry** form, **Recent Activity**
 - **New Entry**: date → type a few letters of a brand or supplier ("kong" → KONG BROTHERS), pick with tap or Enter → choose service (charge shown) → quantity → live total (charge × qty) → submit. Supplier and brand are both saved.
 - **Submitted Entries**: every saved entry, filter by month, search, running total
-- **Monthly Summary**: printable A4 report for any month (suppliers/brands with records only, services stacked, grand total, Prepared by / Verified by). Print opens the browser print dialog on the same page; text auto-shrinks so it always fits one sheet
-
-The amount is always recalculated on the server from the stored charge, and each entry keeps a snapshot of supplier, brand, service and charge, so later changes to the lists never alter past records.
-
+- **Monthly Summary**: printable A4 report for any date range (start date to end date, both inclusive; "This month" / "Last month" shortcuts). Shows only suppliers/brands with records in that range, services stacked, grand total, Prepared by / Verified by. Print opens the browser print dialog on the same page; text auto-shrinks so it always fits one sheet
 - **Admin** (password protected): pick a month, then a brand (same picker as New Entry) to see that brand's entries and **edit** date / service / quantity, **save**, or **delete** (two-step confirm). The password is checked on the server for every edit and delete, and the tab locks again whenever you leave it. Default password is `8888`; set the `ADMIN_PASSWORD` env var in Vercel to change it without editing code.
   - Editing keeps an entry's original charge unless you change its service type, in which case the current charge for the new service is used.
 

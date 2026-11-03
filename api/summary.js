@@ -1,15 +1,20 @@
 import { sql, route } from './_lib.js';
 
-// One row per supplier + brand that has records in the month, with its services stacked.
+const isDate = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(s));
+
+// One row per supplier + brand with records between ?from=YYYY-MM-DD and ?to=YYYY-MM-DD (inclusive),
+// with its services stacked.
 export default route(['GET'], async (req, res) => {
-  const month = String(req.query?.month || '');
-  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) return res.status(400).json({ error: 'month must be YYYY-MM' });
+  const from = String(req.query?.from || '');
+  const to = String(req.query?.to || '');
+  if (!isDate(from) || !isDate(to)) return res.status(400).json({ error: 'from and to must be dates (YYYY-MM-DD)' });
+  if (from > to) return res.status(400).json({ error: 'The end date must be on or after the start date' });
 
   const rows = await sql`
     with s as (
       select supplier, brand, service_type, sum(qty)::int as qty, sum(amount) as amount
       from entries
-      where to_char(entry_date, 'YYYY-MM') = ${month}
+      where entry_date between ${from}::date and ${to}::date
       group by supplier, brand, service_type
     )
     select supplier, brand,
@@ -21,5 +26,5 @@ export default route(['GET'], async (req, res) => {
     order by supplier, brand`;
 
   const grand = Math.round(rows.reduce((a, r) => a + Math.round(r.total * 100), 0)) / 100;
-  res.status(200).json({ month, rows, grand_total: grand });
+  res.status(200).json({ from, to, rows, grand_total: grand });
 });

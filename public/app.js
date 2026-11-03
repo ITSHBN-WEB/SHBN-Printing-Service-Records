@@ -323,25 +323,31 @@
   $('#eAll').addEventListener('click', () => { eMonth.value = ''; loadEntries(); });
 
   /* ---------- monthly summary report ---------- */
-  const sMonth = $('#sMonth');
+  const sFrom = $('#sFrom');
+  const sTo = $('#sTo');
   const MONTHS = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
   let sReq = 0;
 
-  // "2026-11" -> "01/11/2026 - 30/11/2026"
-  function periodOf(ym) {
-    const [y, m] = ym.split('-').map(Number);
-    const last = new Date(y, m, 0).getDate();
-    const mm = String(m).padStart(2, '0');
-    return `01/${mm}/${y} - ${last}/${mm}/${y}`;
+  const slash = (iso) => iso.split('-').reverse().join('/'); // 2026-10-15 -> 15/10/2026
+  const lastDay = (y, m) => new Date(y, m, 0).getDate();     // m is 1-12
+  const pad = (n) => String(n).padStart(2, '0');
+
+  // "15/10/2026 - 15/11/2026"
+  const periodOf = (from, to) => `${slash(from)} - ${slash(to)}`;
+
+  // A whole calendar month reads as "NOVEMBER 2026"; any other range reads as dates.
+  function periodTitle(from, to) {
+    const [y, m, d] = from.split('-').map(Number);
+    if (d === 1 && to === `${y}-${pad(m)}-${pad(lastDay(y, m))}`) return `${MONTHS[m - 1]} ${y}`;
+    return periodOf(from, to);
   }
 
   function sign(label) {
     return `<div><p class="who">${label}</p><div class="line"></div><p>Name:</p><p>Position:</p><p>Date:</p></div>`;
   }
 
-  function reportHTML(ym, data) {
-    const [y, m] = ym.split('-').map(Number);
-    const period = periodOf(ym);
+  function reportHTML(from, to, data) {
+    const period = periodOf(from, to);
     const body = data.rows.length
       ? data.rows.map((r, i) => `<tr>
           <td class="c">${i + 1}</td>
@@ -351,11 +357,11 @@
           <td class="c">${r.services.map((x) => `<div>${esc(x.service_type)}</div>`).join('')}</td>
           <td class="c">${r.services.map((x) => `<div>${x.qty}</div>`).join('')}</td>
           <td class="r">${money(r.total)}</td></tr>`).join('')
-      : '<tr><td colspan="7" class="rnone">No records for this month.</td></tr>';
+      : '<tr><td colspan="7" class="rnone">No records in this period.</td></tr>';
     return `
       <h1 class="rt">SERVAY EVERGREEN BENONI (SHBN)</h1>
       <h2 class="rs">SUMMARY OF PROMOTER / SUPPLIER VARIOUS CHARGE</h2>
-      <p class="rm">MONTH / PERIOD : ${MONTHS[m - 1]} ${y}</p>
+      <p class="rm">MONTH / PERIOD : ${periodTitle(from, to)}</p>
       <table class="rt-tbl">
         <colgroup><col style="width:5%"><col style="width:23%"><col style="width:15%"><col style="width:17%"><col style="width:17%"><col style="width:11%"><col style="width:12%"></colgroup>
         <thead><tr><th>NO.</th><th>NAME OF COMPANY</th><th>BRAND</th><th>RECORD / CHARGE PERIOD</th><th>SERVICE TYPE</th><th>QUANTITY</th><th>TOTAL CHARGE (RM)</th></tr></thead>
@@ -382,18 +388,37 @@
     }
   }
 
+  function setRange(from, to) { sFrom.value = from; sTo.value = to; loadSummary(); }
+  function showMonth(offset) {
+    const t = myToday().split('-').map(Number);
+    const d = new Date(t[0], t[1] - 1 + offset, 1);
+    const y = d.getFullYear(), m = d.getMonth() + 1;
+    setRange(`${y}-${pad(m)}-01`, `${y}-${pad(m)}-${pad(lastDay(y, m))}`);
+  }
+
   async function loadSummary() {
-    const ym = sMonth.value;
-    if (!ym) return;
+    const from = sFrom.value, to = sTo.value;
+    const err = $('#sErr');
+    if (!from || !to) { $('#sPrint').disabled = true; err.hidden = true; return; }
+    if (from > to) {
+      err.textContent = 'The end date must be on or after the start date.';
+      err.hidden = false;
+      $('#sPrint').disabled = true;
+      return;
+    }
+    err.hidden = true;
     const id = ++sReq;
     let data;
-    try { data = await api('/api/summary?month=' + ym); } catch { return; }
+    try { data = await api('/api/summary?' + new URLSearchParams({ from, to })); } catch { return; }
     if (id !== sReq) return;
-    $('#sheet').innerHTML = reportHTML(ym, data);
+    $('#sheet').innerHTML = reportHTML(from, to, data);
     $('#sPrint').disabled = !data.rows.length;
     fitOnePage();
   }
-  sMonth.addEventListener('input', loadSummary);
+  sFrom.addEventListener('input', loadSummary);
+  sTo.addEventListener('input', loadSummary);
+  $('#sThis').addEventListener('click', () => showMonth(0));
+  $('#sLast').addEventListener('click', () => showMonth(-1));
   // window.print() opens the browser's print dialog on this page (no new tab);
   // the dialog closes itself once printing finishes or is cancelled.
   $('#sPrint').addEventListener('click', () => { fitOnePage(); window.print(); });
@@ -583,7 +608,8 @@
     state.ready = true;
     $('#fDate').value = myToday();
     eMonth.value = myToday().slice(0, 7);
-    sMonth.value = myToday().slice(0, 7);
+    sFrom.value = myToday().slice(0, 7) + '-01';
+    sTo.value = myToday();
     renderServices();
     refresh();
     route();

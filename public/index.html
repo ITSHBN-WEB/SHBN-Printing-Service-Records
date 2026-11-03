@@ -154,9 +154,13 @@
         </div>
       </header>
       <div class="filters no-print">
-        <label class="f"><span>Month</span><input type="month" id="sMonth"></label>
+        <label class="f"><span>Start date</span><input type="date" id="sFrom"></label>
+        <label class="f"><span>End date</span><input type="date" id="sTo"></label>
+        <button class="btn ghost" id="sThis" type="button">This month</button>
+        <button class="btn ghost" id="sLast" type="button">Last month</button>
         <button class="btn primary" id="sPrint" type="button" disabled>Print report</button>
       </div>
+      <p class="err no-print" id="sErr" hidden></p>
       <div class="paper-wrap">
         <article class="paper" id="paper" aria-label="Monthly summary report">
           <div class="sheet" id="sheet"></div>
