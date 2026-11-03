@@ -34,7 +34,7 @@
     <nav class="nav" aria-label="Main">
       <a href="#/" data-route="dashboard"><svg><use href="#i-home"/></svg><span>Dashboard</span></a>
       <a href="#/entries" data-route="entries"><svg><use href="#i-list"/></svg><span>Submitted Entries</span></a>
-      <span class="soon" title="Coming next"><svg><use href="#i-chart"/></svg><span>Monthly Summary</span><em>Soon</em></span>
+      <a href="#/summary" data-route="summary"><svg><use href="#i-chart"/></svg><span>Monthly Summary</span></a>
     </nav>
     <div class="side-foot">Servay Evergreen Benoni<br>Outlet SEGSHBN</div>
   </aside>
@@ -143,6 +143,24 @@
           </table>
         </div>
       </section>
+    </section>
+    <!-- MONTHLY SUMMARY -->
+    <section id="view-summary" hidden>
+      <header class="page-head no-print">
+        <div>
+          <p class="eyebrow">Reports</p>
+          <h1>Monthly Summary</h1>
+        </div>
+      </header>
+      <div class="filters no-print">
+        <label class="f"><span>Month</span><input type="month" id="sMonth"></label>
+        <button class="btn primary" id="sPrint" type="button" disabled>Print report</button>
+      </div>
+      <div class="paper-wrap">
+        <article class="paper" id="paper" aria-label="Monthly summary report">
+          <div class="sheet" id="sheet"></div>
+        </article>
+      </div>
     </section>
   </main>
 </div>

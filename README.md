@@ -7,7 +7,7 @@ Stack: static frontend (`public/`) + Vercel serverless API (`api/`) + Neon Postg
 - **Dashboard**: greeting, today / this-month totals, **New Entry** form, **Recent Activity**
 - **New Entry**: date → type a few letters of a brand or supplier ("kong" → KONG BROTHERS), pick with tap or Enter → choose service (charge shown) → quantity → live total (charge × qty) → submit. Supplier and brand are both saved.
 - **Submitted Entries**: every saved entry, filter by month, search, running total
-- Monthly Summary is a placeholder in the sidebar for the next phase
+- **Monthly Summary**: printable A4 report for any month (suppliers/brands with records only, services stacked, grand total, Prepared by / Verified by). Print opens the browser print dialog on the same page; text auto-shrinks so it always fits one sheet
 
 The amount is always recalculated on the server from the stored charge, and each entry keeps a snapshot of supplier, brand, service and charge, so later changes to the lists never alter past records.
 

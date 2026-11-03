@@ -55,16 +55,16 @@
 
   /* ---------- routing ---------- */
   function route() {
-    const r = location.hash.startsWith('#/entries') ? 'entries' : 'dashboard';
-    $('#view-dashboard').hidden = r !== 'dashboard';
-    $('#view-entries').hidden = r !== 'entries';
+    const h = location.hash;
+    const r = h.startsWith('#/entries') ? 'entries' : h.startsWith('#/summary') ? 'summary' : 'dashboard';
+    ['dashboard', 'entries', 'summary'].forEach((v) => { $('#view-' + v).hidden = r !== v; });
     document.querySelectorAll('.nav a').forEach((a) => {
       const on = a.dataset.route === r;
       a.classList.toggle('active', on);
       if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     });
     if (!state.ready) return;
-    if (r === 'dashboard') loadDashboard(); else loadEntries();
+    if (r === 'dashboard') loadDashboard(); else if (r === 'entries') loadEntries(); else loadSummary();
     window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', route);
@@ -301,6 +301,82 @@
   eSearch.addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(loadEntries, 250); });
   $('#eAll').addEventListener('click', () => { eMonth.value = ''; loadEntries(); });
 
+  /* ---------- monthly summary report ---------- */
+  const sMonth = $('#sMonth');
+  const MONTHS = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+  let sReq = 0;
+
+  // "2026-11" -> "01/11/2026 - 30/11/2026"
+  function periodOf(ym) {
+    const [y, m] = ym.split('-').map(Number);
+    const last = new Date(y, m, 0).getDate();
+    const mm = String(m).padStart(2, '0');
+    return `01/${mm}/${y} - ${last}/${mm}/${y}`;
+  }
+
+  function sign(label) {
+    return `<div><p class="who">${label}</p><div class="line"></div><p>Name:</p><p>Position:</p><p>Date:</p></div>`;
+  }
+
+  function reportHTML(ym, data) {
+    const [y, m] = ym.split('-').map(Number);
+    const period = periodOf(ym);
+    const body = data.rows.length
+      ? data.rows.map((r, i) => `<tr>
+          <td class="c">${i + 1}</td>
+          <td class="l">${esc(r.supplier)}</td>
+          <td class="l">${esc(r.brand)}</td>
+          <td class="c">${period}</td>
+          <td class="c">${r.services.map((x) => `<div>${esc(x.service_type)}</div>`).join('')}</td>
+          <td class="c">${r.services.map((x) => `<div>${x.qty}</div>`).join('')}</td>
+          <td class="r">${money(r.total)}</td></tr>`).join('')
+      : '<tr><td colspan="7" class="rnone">No records for this month.</td></tr>';
+    return `
+      <h1 class="rt">SERVAY EVERGREEN BENONI (SHBN)</h1>
+      <h2 class="rs">SUMMARY OF PROMOTER / SUPPLIER VARIOUS CHARGE</h2>
+      <p class="rm">MONTH / PERIOD : ${MONTHS[m - 1]} ${y}</p>
+      <table class="rt-tbl">
+        <colgroup><col style="width:5%"><col style="width:23%"><col style="width:15%"><col style="width:17%"><col style="width:17%"><col style="width:11%"><col style="width:12%"></colgroup>
+        <thead><tr><th>NO.</th><th>NAME OF COMPANY</th><th>BRAND</th><th>RECORD / CHARGE PERIOD</th><th>SERVICE TYPE</th><th>QUANTITY</th><th>TOTAL CHARGE (RM)</th></tr></thead>
+        <tbody>${body}
+          <tr class="gt"><td class="nb" colspan="4"></td><td class="r" colspan="2">GRAND TOTAL (RM)</td><td class="r">${money(data.grand_total)}</td></tr>
+        </tbody>
+      </table>
+      <div class="sign">${sign('Prepared by,')}${sign('Verified by,')}</div>`;
+  }
+
+  // Shrink the report's text until it fits one A4 page (printable height 277mm).
+  function fitOnePage() {
+    const paper = $('#paper');
+    const probe = document.createElement('div');
+    probe.style.cssText = 'position:absolute;visibility:hidden;height:268mm;width:1px';
+    document.body.appendChild(probe);
+    const maxH = probe.offsetHeight;
+    probe.remove();
+    let scale = 1;
+    paper.style.setProperty('--s', scale);
+    while ($('#sheet').offsetHeight > maxH && scale > 0.3) {
+      scale = Math.round((scale - 0.03) * 100) / 100;
+      paper.style.setProperty('--s', scale);
+    }
+  }
+
+  async function loadSummary() {
+    const ym = sMonth.value;
+    if (!ym) return;
+    const id = ++sReq;
+    let data;
+    try { data = await api('/api/summary?month=' + ym); } catch { return; }
+    if (id !== sReq) return;
+    $('#sheet').innerHTML = reportHTML(ym, data);
+    $('#sPrint').disabled = !data.rows.length;
+    fitOnePage();
+  }
+  sMonth.addEventListener('input', loadSummary);
+  // window.print() opens the browser's print dialog on this page (no new tab);
+  // the dialog closes itself once printing finishes or is cancelled.
+  $('#sPrint').addEventListener('click', () => { fitOnePage(); window.print(); });
+
   /* ---------- init ---------- */
   async function init() {
     try {
@@ -316,6 +392,7 @@
     state.ready = true;
     $('#fDate').value = myToday();
     eMonth.value = myToday().slice(0, 7);
+    sMonth.value = myToday().slice(0, 7);
     renderServices();
     refresh();
     route();
