@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SHBN - Printing Service Records</title>
+<meta name="description" content="Record photocopy, print and laminate services charged to suppliers.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f766e'/%3E%3Cpath d='M10 12V8h12v4M10 22H8v-8h16v8h-2M10 18h12v7H10z' fill='none' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<!-- Access code gate (only used when ACCESS_CODE is set on the server) -->
+<div class="lock" id="lock" hidden>
+  <form class="lock-card" id="lockForm">
+    <div class="logo lg" aria-hidden="true"><svg><use href="#i-print"/></svg></div>
+    <h1>SHBN - Printing Service Records</h1>
+    <p>Enter the access code to continue.</p>
+    <input type="password" id="lockInput" placeholder="Access code" autocomplete="current-password" required>
+    <p class="err" id="lockErr" hidden>Incorrect access code.</p>
+    <button class="btn primary" type="submit">Unlock</button>
+  </form>
+</div>
+
+<div class="shell" id="shell" hidden>
+  <aside class="side">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"><svg><use href="#i-print"/></svg></div>
+      <div class="brand-text"><strong>Printing Service</strong><span>Records · SHBN</span></div>
+    </div>
+    <nav class="nav" aria-label="Main">
+      <a href="#/" data-route="dashboard"><svg><use href="#i-home"/></svg><span>Dashboard</span></a>
+      <a href="#/entries" data-route="entries"><svg><use href="#i-list"/></svg><span>Submitted Entries</span></a>
+      <span class="soon" title="Coming next"><svg><use href="#i-chart"/></svg><span>Monthly Summary</span><em>Soon</em></span>
+    </nav>
+    <div class="side-foot">Servay Evergreen Benoni<br>Outlet SEGSHBN</div>
+  </aside>
+
+  <main class="main">
+    <!-- DASHBOARD -->
+    <section id="view-dashboard" hidden>
+      <header class="hero">
+        <div>
+          <p class="eyebrow" id="todayLabel"></p>
+          <h1 id="greeting">Hello</h1>
+        </div>
+        <div class="stats">
+          <div class="stat"><span>Today</span><strong id="stToday">RM 0.00</strong><small id="stTodayN">0 entries</small></div>
+          <div class="stat"><span>This month</span><strong id="stMonth">RM 0.00</strong><small id="stMonthN">0 entries</small></div>
+        </div>
+      </header>
+
+      <div class="grid">
+        <section class="card entry-card" aria-labelledby="neTitle">
+          <div class="card-head">
+            <h2 id="neTitle">New Entry</h2>
+            <span class="hint">Record a service charged to a supplier</span>
+          </div>
+
+          <form id="entryForm" autocomplete="off" novalidate>
+            <div class="field">
+              <label for="fDate">Date</label>
+              <input type="date" id="fDate" required>
+            </div>
+
+            <div class="field">
+              <label for="fBrand">Supplier / Brand</label>
+              <div class="combo">
+                <svg class="combo-ico"><use href="#i-search"/></svg>
+                <input id="fBrand" type="text" placeholder="Type a brand or supplier, e.g. kong"
+                       role="combobox" aria-expanded="false" aria-controls="brandList" aria-autocomplete="list"
+                       autocapitalize="characters" spellcheck="false">
+                <button type="button" class="clear" id="brandClear" aria-label="Clear supplier" hidden>&times;</button>
+                <ul id="brandList" class="opts" role="listbox" hidden></ul>
+              </div>
+              <p class="picked" id="supplierPicked" hidden></p>
+            </div>
+
+            <div class="field">
+              <label id="svcLabel">Service type</label>
+              <div class="svcs" id="svcGrid" role="radiogroup" aria-labelledby="svcLabel"></div>
+            </div>
+
+            <div class="field qtyrow">
+              <div>
+                <label for="fQty">Quantity</label>
+                <div class="stepper">
+                  <button type="button" id="qtyMinus" aria-label="Decrease">&minus;</button>
+                  <input id="fQty" type="number" inputmode="numeric" min="1" step="1" value="1">
+                  <button type="button" id="qtyPlus" aria-label="Increase">+</button>
+                </div>
+              </div>
+              <div class="total" aria-live="polite">
+                <span class="total-label">Total</span>
+                <strong id="totalAmt">RM 0.00</strong>
+                <small id="totalCalc">Choose a service</small>
+              </div>
+            </div>
+
+            <p class="err" id="formErr" hidden></p>
+            <button class="btn primary wide" id="submitBtn" type="submit" disabled>Submit entry</button>
+          </form>
+        </section>
+
+        <section class="card recent-card" aria-labelledby="raTitle">
+          <div class="card-head">
+            <h2 id="raTitle">Recent Activity</h2>
+            <a class="link" href="#/entries">View all</a>
+          </div>
+          <ul class="recent" id="recentList"></ul>
+        </section>
+      </div>
+    </section>
+
+    <!-- SUBMITTED ENTRIES -->
+    <section id="view-entries" hidden>
+      <header class="page-head">
+        <div>
+          <p class="eyebrow">Records</p>
+          <h1>Submitted Entries</h1>
+        </div>
+      </header>
+      <section class="card">
+        <div class="filters">
+          <label class="f"><span>Month</span><input type="month" id="eMonth"></label>
+          <label class="f grow"><span>Search</span><input type="search" id="eSearch" placeholder="Supplier, brand or service"></label>
+          <button class="btn ghost" id="eAll" type="button">All months</button>
+        </div>
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead><tr>
+              <th>Date</th><th>Supplier</th><th>Brand</th><th>Service type</th>
+              <th class="num">Qty</th><th class="num">Charge (RM)</th><th class="num">Amount (RM)</th>
+            </tr></thead>
+            <tbody id="eBody"></tbody>
+            <tfoot><tr>
+              <td colspan="6" id="eCount">0 entries</td>
+              <td class="num" id="eTotal">0.00</td>
+            </tr></tfoot>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-print" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9V3h10v6"/><path d="M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><rect x="7" y="14" width="10" height="7" rx="1"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>
+</svg>
+<script src="/app.js"></script>
+</body>
+</html>

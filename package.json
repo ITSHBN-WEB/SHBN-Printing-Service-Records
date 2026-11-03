@@ -1,0 +1,18 @@
+{
+  "name": "shbn-printing-service-records",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "SHBN - Printing Service Records (Neon + Vercel + GitHub)",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "node dev/server.mjs",
+    "db:setup": "node scripts/setup-db.mjs"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.0"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.3.0"
+  }
+}
