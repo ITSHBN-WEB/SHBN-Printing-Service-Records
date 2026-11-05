@@ -249,7 +249,8 @@ mark { background: transparent; color: var(--accent); font-weight: 800; text-dec
 .rt-tbl td.c { text-align: center; }
 .rt-tbl td.r { text-align: right; }
 .rt-tbl td.l { text-align: left; word-break: break-word; }
-.rt-tbl td div + div { margin-top: .15em; }
+.rt-tbl td.nt { border-top: 0; }
+.rt-tbl td.nbm { border-bottom: 0; }
 .rt-tbl tr.gt td { font-weight: 700; font-size: 1.09em; }
 .rt-tbl tr.gt td.nb { border: 0; }
 .sign { display: flex; gap: 12mm; margin-top: 2.2em; break-inside: avoid; }

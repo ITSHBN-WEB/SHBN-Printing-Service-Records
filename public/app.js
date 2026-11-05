@@ -348,25 +348,35 @@
 
   function reportHTML(from, to, data) {
     const period = periodOf(from, to);
+    // One <tr> per service line; the shared cells (no., company, brand, period, total) span them,
+    // so quantity and charge always line up with their service even when a name wraps.
     const body = data.rows.length
-      ? data.rows.map((r, i) => `<tr>
-          <td class="c">${i + 1}</td>
-          <td class="l">${esc(r.supplier)}</td>
-          <td class="l">${esc(r.brand)}</td>
-          <td class="c">${period}</td>
-          <td class="c">${r.services.map((x) => `<div>${esc(x.service_type)}</div>`).join('')}</td>
-          <td class="c">${r.services.map((x) => `<div>${x.qty}</div>`).join('')}</td>
-          <td class="r">${money(r.total)}</td></tr>`).join('')
-      : '<tr><td colspan="7" class="rnone">No records in this period.</td></tr>';
+      ? data.rows.map((r, i) => {
+          const n = r.services.length;
+          return r.services.map((x, k) => {
+            const first = k === 0, last = k === n - 1;
+            const cc = 'c' + (first ? '' : ' nt') + (last ? '' : ' nbm'); // hide lines between stacked services
+            return `<tr>${first ? `
+              <td class="c" rowspan="${n}">${i + 1}</td>
+              <td class="l" rowspan="${n}">${esc(r.supplier)}</td>
+              <td class="l" rowspan="${n}">${esc(r.brand)}</td>
+              <td class="c" rowspan="${n}">${period}</td>` : ''}
+              <td class="${cc}">${esc(x.service_type)}</td>
+              <td class="${cc}">${money(x.charge)}</td>
+              <td class="${cc}">${x.qty}</td>${first ? `
+              <td class="r" rowspan="${n}">${money(r.total)}</td>` : ''}</tr>`;
+          }).join('');
+        }).join('')
+      : '<tr><td colspan="8" class="rnone">No records in this period.</td></tr>';
     return `
       <h1 class="rt">SERVAY EVERGREEN BENONI (SHBN)</h1>
       <h2 class="rs">SUMMARY OF PROMOTER / SUPPLIER VARIOUS CHARGE</h2>
       <p class="rm">MONTH / PERIOD : ${periodTitle(from, to)}</p>
       <table class="rt-tbl">
-        <colgroup><col style="width:5%"><col style="width:23%"><col style="width:15%"><col style="width:17%"><col style="width:17%"><col style="width:11%"><col style="width:12%"></colgroup>
-        <thead><tr><th>NO.</th><th>NAME OF COMPANY</th><th>BRAND</th><th>RECORD / CHARGE PERIOD</th><th>SERVICE TYPE</th><th>QUANTITY</th><th>TOTAL CHARGE (RM)</th></tr></thead>
+        <colgroup><col style="width:5%"><col style="width:19%"><col style="width:13%"><col style="width:14%"><col style="width:17%"><col style="width:10%"><col style="width:11%"><col style="width:11%"></colgroup>
+        <thead><tr><th>NO.</th><th>NAME OF COMPANY</th><th>BRAND</th><th>RECORD / CHARGE PERIOD</th><th>SERVICE TYPE</th><th>SERVICE CHARGE (RM)</th><th>QUANTITY</th><th>TOTAL CHARGE (RM)</th></tr></thead>
         <tbody>${body}
-          <tr class="gt"><td class="nb" colspan="4"></td><td class="r" colspan="2">GRAND TOTAL (RM)</td><td class="r">${money(data.grand_total)}</td></tr>
+          <tr class="gt"><td class="nb" colspan="4"></td><td class="r" colspan="3">GRAND TOTAL (RM)</td><td class="r">${money(data.grand_total)}</td></tr>
         </tbody>
       </table>
       <div class="sign">${sign('Prepared by,')}${sign('Verified by,')}</div>`;
