@@ -519,7 +519,7 @@
 
   // Live preview of a row: amount, and whether anything changed.
   function syncRow(tr) {
-    const e = adm.entries.find((x) => x.id === Number(tr.dataset.id));
+    const e = adm.entries.find((x) => String(x.id) === tr.dataset.id);
     if (!e) return;
     const date = tr.querySelector('.r-date').value;
     const sid = Number(tr.querySelector('.r-svc').value) || null;
@@ -541,7 +541,7 @@
     const btn = e.target.closest('button[data-act]');
     if (!btn) return;
     const tr = btn.closest('tr');
-    const id = Number(tr.dataset.id);
+    const id = tr.dataset.id; // ids may arrive as text (bigint), so always compare as strings
 
     if (btn.dataset.act === 'del') {
       if (!btn.classList.contains('armed')) {           // first click arms, second confirms
@@ -552,7 +552,7 @@
       btn.disabled = true;
       try {
         await api('/api/admin?id=' + id, { method: 'DELETE' });
-        adm.entries = adm.entries.filter((x) => x.id !== id);
+        adm.entries = adm.entries.filter((x) => String(x.id) !== id);
         renderAdmin();
         toast('Entry deleted');
       } catch (err) {
@@ -568,7 +568,7 @@
       const { entry } = await api('/api/admin', {
         method: 'PUT',
         body: JSON.stringify({
-          id,
+          id: Number(id),
           entry_date: tr.querySelector('.r-date').value,
           service_id: Number(tr.querySelector('.r-svc').value),
           qty: Number(tr.querySelector('.r-qty').value),
@@ -576,11 +576,11 @@
       });
       const moved = entry.entry_date.slice(0, 7) !== aMonth.value;
       if (moved) {
-        adm.entries = adm.entries.filter((x) => x.id !== id);
+        adm.entries = adm.entries.filter((x) => String(x.id) !== id);
         renderAdmin();
         toast(`Saved. Moved to ${dmy(entry.entry_date)}, outside this month`);
       } else {
-        adm.entries = adm.entries.map((x) => (x.id === id ? entry : x));
+        adm.entries = adm.entries.map((x) => (String(x.id) === id ? entry : x));
         const t = document.createElement('tbody');
         t.innerHTML = rowHTML(entry);
         tr.replaceWith(t.firstElementChild);

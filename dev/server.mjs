@@ -11,7 +11,8 @@ const PORT = Number(process.env.PORT) || 3000;
 
 if (!process.env.DATABASE_URL) {
   const { PGlite } = await import('@electric-sql/pglite');
-  const db = new PGlite(process.env.PGLITE_DIR || join(root, '.pglite'));
+  // Return int8 (bigserial ids) as strings, exactly like the Neon driver does, so local runs catch type bugs.
+  const db = new PGlite(process.env.PGLITE_DIR || join(root, '.pglite'), { parsers: { 20: (v) => v } });
   await db.exec(readFileSync(join(root, 'db/schema.sql'), 'utf8'));
   await db.exec(readFileSync(join(root, 'db/seed.sql'), 'utf8'));
   globalThis.__SQL_OVERRIDE = async (strings, ...values) => {
