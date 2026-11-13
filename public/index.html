@@ -10,8 +10,29 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css">
+<style>
+  /* Loading screen: inline so it shows immediately on every open */
+  #boot { position: fixed; inset: 0; z-index: 100; background: #0b1118; color: #c9d6d4; display: flex; flex-direction: column;
+          align-items: center; justify-content: center; gap: 16px; font: 13px/1.4 "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+          transition: opacity .3s ease; }
+  #boot.done { opacity: 0; pointer-events: none; }
+  #boot .spin { width: 34px; height: 34px; border-radius: 50%; border: 3px solid #1d2b36; border-top-color: #2dd4bf; animation: bootspin .8s linear infinite; }
+  #boot.fail .spin { display: none; }
+  #boot button { display: none; margin-top: 4px; padding: 9px 20px; border-radius: 10px; border: 1px solid #2dd4bf; background: transparent; color: #2dd4bf; font: inherit; font-weight: 600; cursor: pointer; }
+  #boot.fail button { display: inline-block; }
+  @keyframes bootspin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { #boot .spin { animation-duration: 2.4s; } }
+</style>
+
 </head>
 <body>
+
+<!-- Loading screen (removed by app.js once data is ready) -->
+<div id="boot" role="status" aria-live="polite">
+  <div class="spin" aria-hidden="true"></div>
+  <p id="bootMsg">Loading, please wait...</p>
+  <button type="button" id="bootRetry">Try again</button>
+</div>
 
 <!-- Access code gate (only used when ACCESS_CODE is set on the server) -->
 <div class="lock" id="lock" hidden>

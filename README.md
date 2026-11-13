@@ -11,6 +11,8 @@ Stack: static frontend (`public/`) + Vercel serverless API (`api/`) + Neon Postg
 - **Admin** (password protected): pick a month, then a brand (same picker as New Entry) to see that brand's entries and **edit** date / service / quantity, **save**, or **delete** (two-step confirm). The password is checked on the server for every edit and delete, and the tab locks again whenever you leave it. Default password is `8888`; set the `ADMIN_PASSWORD` env var in Vercel to change it without editing code.
   - Editing keeps an entry's original charge unless you change its service type, in which case the current charge for the new service is used.
 
+- **Loading screen**: a dark "Loading, please wait..." spinner shows on every open until the data is ready. If loading fails (no connection or server error) it shows a message with a **Try again** button instead of a blank page.
+
 ## Deploy (about 10 minutes)
 
 ### 1. Neon (database)

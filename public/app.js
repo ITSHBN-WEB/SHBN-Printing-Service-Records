@@ -45,8 +45,30 @@
   let adminPass = ''; // kept in memory only; cleared whenever you leave the Admin tab
   const state = { suppliers: [], services: [], supplier: null, service: null, qty: 1, ready: false };
 
+  /* ---------- loading screen ---------- */
+  function hideBoot() {
+    const b = $('#boot');
+    if (!b) return;
+    b.classList.add('done');
+    setTimeout(() => b.remove(), 350);
+  }
+  function bootFail() {
+    const b = $('#boot');
+    if (!b) return false;
+    b.classList.add('fail');
+    $('#bootMsg').textContent = 'Could not load the app. Please check your connection and try again.';
+    return true;
+  }
+  $('#bootRetry').addEventListener('click', () => {
+    const b = $('#boot');
+    b.classList.remove('fail');
+    $('#bootMsg').textContent = 'Loading, please wait...';
+    init();
+  });
+
   /* ---------- lock ---------- */
   function showLock(wrong) {
+    hideBoot();
     $('#shell').hidden = true;
     $('#lock').hidden = false;
     $('#lockErr').hidden = !wrong;
@@ -610,7 +632,7 @@
       state.suppliers = data.suppliers;
       state.services = data.services;
     } catch (err) {
-      if (err.message !== 'locked') toast('Could not load data: ' + err.message);
+      if (err.message !== 'locked' && !bootFail()) toast('Could not load data: ' + err.message);
       return;
     }
     $('#lock').hidden = true;
@@ -623,6 +645,7 @@
     renderServices();
     refresh();
     route();
+    hideBoot();
   }
   init();
 })();
